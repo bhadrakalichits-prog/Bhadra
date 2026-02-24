@@ -1,0 +1,319 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <title>Bhadrakali Chits Manager</title>
+    <meta name="theme-color" content="#1a1f2e">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Bhadrakali">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            color-scheme: light;
+            /* Premium Dark Navy + Gold Design System */
+            --brand-navy: #0f1629;
+            --brand-navy-light: #1a2540;
+            --brand-navy-mid: #243050;
+            --brand-gold: #f5a623;
+            --brand-gold-light: #ffc658;
+            --brand-gold-pale: #fff8ed;
+            --brand-accent: #3b82f6;
+            --brand-accent-light: #eff6ff;
+            --surface: #ffffff;
+            --surface-2: #f8fafc;
+            --surface-3: #f1f5f9;
+            --border: #e2e8f0;
+            --border-strong: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --warning: #f59e0b;
+            --warning-bg: #fffbeb;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.05);
+            --shadow-xl: 0 20px 50px rgba(0,0,0,0.15);
+        }
+
+        html, body {
+            height: 100%;
+            height: -webkit-fill-available;
+            margin: 0;
+            padding: 0;
+            overscroll-behavior-y: none;
+        }
+
+        body {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background-color: var(--surface-2);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        /* ── Legacy Class Aliases (keep all old TSX classes working) ── */
+        .ms-shadow { box-shadow: var(--shadow-sm); }
+        .ms-border { border-color: var(--border); }
+        .ms-bg-sidebar { background-color: var(--brand-navy); }
+        .ms-bg-card { background-color: var(--surface); box-shadow: var(--shadow-sm); border-color: var(--border) !important; }
+        .ms-primary { color: var(--brand-accent); }
+        .ms-bg-primary { background-color: var(--brand-accent); }
+        .ms-bg-hover { background-color: var(--surface-3); }
+        .ms-active-nav {
+            background: rgba(245,166,35,0.12);
+            border-left: 3px solid var(--brand-gold);
+            font-weight: 600;
+            color: var(--brand-gold) !important;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* ── Form Controls ── */
+        input, select, textarea {
+            background-color: var(--surface) !important;
+            color: var(--text-primary) !important;
+            border: 1.5px solid var(--border-strong) !important;
+            border-radius: 8px !important;
+            padding: 9px 12px !important;
+            font-size: 14px !important;
+            font-family: 'DM Sans', sans-serif !important;
+            width: 100%;
+            display: block;
+            box-sizing: border-box;
+            -webkit-appearance: none;
+            appearance: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        label {
+            color: var(--text-secondary) !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.06em !important;
+            text-transform: uppercase !important;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        input::placeholder { color: var(--text-muted) !important; }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--brand-accent) !important;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.12) !important;
+            outline: none !important;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 12px center !important;
+            background-size: 14px !important;
+            padding-right: 36px !important;
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* ── Animations ── */
+        .animate-in {
+            animation: fadeSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .h-dynamic-screen { height: 100vh; height: 100dvh; }
+
+        /* ── Premium Card ── */
+        .card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* ── Stat Cards ── */
+        .stat-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 24px;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+        /* ── Status Badges ── */
+        .badge-paid { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; }
+        .badge-pending { background: var(--danger-bg); color: var(--danger); border: 1px solid #fecaca; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; }
+        .badge-partial { background: var(--warning-bg); color: var(--warning); border: 1px solid #fde68a; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; }
+
+        /* ── Primary Button ── */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            font-weight: 700;
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 2px 8px rgba(59,130,246,0.35);
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+        .btn-primary:hover { box-shadow: 0 4px 14px rgba(59,130,246,0.45); transform: translateY(-1px); }
+        .btn-primary:active { transform: translateY(0); box-shadow: 0 2px 6px rgba(59,130,246,0.3); }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1.5px solid var(--border-strong);
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+        .btn-secondary:hover { background: var(--surface-3); border-color: var(--text-muted); }
+
+        /* ── Table Styles ── */
+        .data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .data-table th { 
+            background: var(--surface-2); 
+            padding: 10px 16px; 
+            font-size: 10px; 
+            font-weight: 700; 
+            letter-spacing: 0.08em; 
+            text-transform: uppercase; 
+            color: var(--text-muted);
+            border-bottom: 1.5px solid var(--border);
+            white-space: nowrap;
+        }
+        .data-table td { 
+            padding: 13px 16px; 
+            border-bottom: 1px solid var(--border); 
+            font-size: 13px;
+            vertical-align: middle;
+        }
+        .data-table tbody tr:last-child td { border-bottom: none; }
+        .data-table tbody tr:hover td { background: var(--surface-2); }
+
+        /* ── Modal Backdrop ── */
+        .modal-backdrop {
+            background: rgba(15, 22, 41, 0.65);
+            backdrop-filter: blur(6px);
+        }
+
+        /* ── Page Header Section ── */
+        .page-header { 
+            background: var(--surface); 
+            border-bottom: 1.5px solid var(--border); 
+            padding: 16px 24px;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        /* Sidebar Nav Button Override */
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.65);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: left;
+            margin-bottom: 2px;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+        .nav-btn.active {
+            background: rgba(245,166,35,0.14);
+            color: #f5a623;
+            font-weight: 600;
+            border-left: 3px solid #f5a623;
+            border-radius: 0 8px 8px 0;
+            padding-left: 9px;
+        }
+
+        /* ── Login Page ── */
+        .login-bg {
+            background: linear-gradient(135deg, var(--brand-navy) 0%, #0d1b3e 50%, #162040 100%);
+            min-height: 100vh;
+        }
+        .login-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+        }
+        .login-card input {
+            background: rgba(255,255,255,0.07) !important;
+            border: 1.5px solid rgba(255,255,255,0.15) !important;
+            color: white !important;
+            border-radius: 10px !important;
+        }
+        .login-card input::placeholder { color: rgba(255,255,255,0.35) !important; }
+        .login-card input:focus {
+            border-color: var(--brand-gold) !important;
+            box-shadow: 0 0 0 3px rgba(245,166,35,0.2) !important;
+        }
+        .login-card label { color: rgba(255,255,255,0.5) !important; }
+
+        /* Number/mono */
+        .mono { font-family: 'DM Mono', monospace; }
+
+        /* Amount display */
+        .amount-positive { color: var(--success); font-weight: 700; }
+        .amount-negative { color: var(--danger); font-weight: 700; }
+        .amount-neutral { color: var(--text-secondary); font-weight: 600; }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.0.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.0.0/",
+    "react/": "https://esm.sh/react@^19.0.0/",
+    "recharts": "https://esm.sh/recharts@^2.15.0",
+    "vite": "https://esm.sh/vite@^6.0.3",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^4.3.4",
+    "@vercel/blob": "https://esm.sh/@vercel/blob@^0.27.1"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="root" class="h-dynamic-screen"></div>
+    <!-- Entry point standardized for root deployment -->
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>
