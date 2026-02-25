@@ -90,6 +90,7 @@ const App: React.FC = () => {
     const initSync = async () => {
       await db.loadCloudData();
       setIsAppReady(true);
+      setIsAppReady(true);
       const params = new URLSearchParams(window.location.search);
       const token = params.get('loginToken');
       if (token) {
