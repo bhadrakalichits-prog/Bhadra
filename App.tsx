@@ -50,29 +50,42 @@ const App: React.FC = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  const handleAutoLogin = useCallback((username: string, passwordHash: string) => {
-    const members = db.getMembers();
-    const matchedMember = members.find(m => m.memberId === username);
-    if (matchedMember) {
-      const last4Digits = matchedMember.mobile.replace(/\D/g, '').slice(-4);
-      if (passwordHash === last4Digits) {
-        setUser({
-          userId: matchedMember.memberId,
-          name: matchedMember.name,
-          role: UserRole.MEMBER,
-          username: matchedMember.memberId,
-          passwordHash: '',
-          isActive: true,
-          memberId: matchedMember.memberId
-        });
-        setActivePage('my_portal');
-        const newUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
-        return true;
-      }
+  const handleAutoLogin = useCallback(async (username: string, passwordHash: string) => {
+  let members = db.getMembers();
+
+  // Ensure cloud data loaded
+  if (!members || members.length === 0) {
+    await db.loadCloudData();
+    members = db.getMembers();
+  }
+
+  const matchedMember = members.find(m => m.memberId === username);
+
+  if (matchedMember) {
+    const last4Digits = matchedMember.mobile.replace(/\D/g, '').slice(-4);
+
+    if (passwordHash === last4Digits) {
+      setUser({
+        userId: matchedMember.memberId,
+        name: matchedMember.name,
+        role: UserRole.MEMBER,
+        username: matchedMember.memberId,
+        passwordHash: '',
+        isActive: true,
+        memberId: matchedMember.memberId
+      });
+
+      setActivePage('my_portal');
+
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+
+      return true;
     }
-    return false;
-  }, []);
+  }
+
+  return false;
+}, []);
 
   useEffect(() => {
     db.setDirtyListener((dirty) => {
@@ -127,7 +140,7 @@ const App: React.FC = () => {
     setShowInstallBanner(false);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const { username, password } = loginForm;
 
