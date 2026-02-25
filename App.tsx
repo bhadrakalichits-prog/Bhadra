@@ -15,6 +15,7 @@ const App: React.FC = () => {
   const [activePage, setActivePage] = useState('dashboard');
   const [user, setUser] = useState<User | null>(null);
   const [isAppReady, setIsAppReady] = useState(false);
+  const [isAppReady, setIsAppReady] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const [isDirty, setIsDirty] = useState(false);
