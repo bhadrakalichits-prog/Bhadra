@@ -152,7 +152,7 @@ class DB {
   this.onSyncChange?.(true);
 
   try {
-    // 1️⃣ Fetch cloud data
+    // STEP 1: ALWAYS FETCH CLOUD FIRST
     const rows = await supabaseRequest(
       'GET',
       `/bhadrakali_db?id=eq.${DB_ROW_ID}&select=data`
@@ -161,40 +161,14 @@ class DB {
     const cloudRow = rows && rows.length > 0 ? rows[0] : null;
     const cloudData = cloudRow?.data || null;
 
+    if (cloudData) {
+      this.deserialize(cloudData);
+      this.saveLocal();
+    }
+
+    // STEP 2: NOW PUSH CURRENT LOCAL (after merge)
     const localData = JSON.parse(this.getSerializedData());
 
-    const localHasData =
-      (localData.members && localData.members.length > 0) ||
-      (localData.groups && localData.groups.length > 0);
-
-    const cloudHasData =
-      cloudData &&
-      ((cloudData.members && cloudData.members.length > 0) ||
-        (cloudData.groups && cloudData.groups.length > 0));
-
-    // 🚨 SAFETY RULE
-    // If cloud has data and local is empty → PULL cloud
-    if (cloudHasData && !localHasData) {
-      this.deserialize(cloudData);
-      this.saveLocal();
-      this.isDirty = false;
-      this.onDirtyChange?.(false);
-      return true;
-    }
-
-    const cloudTime = new Date(cloudData?.lastUpdated || 0).getTime();
-    const localTime = new Date(localData?.lastUpdated || 0).getTime();
-
-    // If cloud newer → pull
-    if (cloudData && cloudTime > localTime) {
-      this.deserialize(cloudData);
-      this.saveLocal();
-      this.isDirty = false;
-      this.onDirtyChange?.(false);
-      return true;
-    }
-
-    // Otherwise push local
     const payload = {
       id: DB_ROW_ID,
       data: localData,
