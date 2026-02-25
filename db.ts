@@ -223,7 +223,7 @@ class DB {
       const onlineTime = new Date(onlineData.lastUpdated || 0).getTime();
       const localTime  = new Date(localData?.lastUpdated || 0).getTime();
 
-      if (onlineTime > localTime || !localData) {
+      if (onlineData) {
         this.deserialize(onlineData);
         this.saveLocal();
         this.isDirty = false;
