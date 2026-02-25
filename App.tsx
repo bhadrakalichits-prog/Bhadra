@@ -141,41 +141,52 @@ const App: React.FC = () => {
   };
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const { username, password } = loginForm;
+  e.preventDefault();
+  const { username, password } = loginForm;
 
-    if (password === 'xdr5tgb' && (username.toLowerCase() === 'admin' || !username)) {
-      const admin = db.getUsers().find(u => u.username === 'admin');
-      if (admin) {
-        setUser(admin);
-        setLoginError('');
-        setActivePage('dashboard');
-        return;
-      }
+  // Admin login (unchanged logic)
+  if (password === 'xdr5tgb' && (username.toLowerCase() === 'admin' || !username)) {
+    const admin = db.getUsers().find(u => u.username === 'admin');
+    if (admin) {
+      setUser(admin);
+      setLoginError('');
+      setActivePage('dashboard');
+      return;
     }
+  }
 
-    const members = db.getMembers();
-    const matchedMember = members.find(m => m.memberId === username);
-    if (matchedMember) {
-      const last4Digits = matchedMember.mobile.replace(/\D/g, '').slice(-4);
-      if (password === last4Digits) {
-        setUser({
-          userId: matchedMember.memberId,
-          name: matchedMember.name,
-          role: UserRole.MEMBER,
-          username: matchedMember.memberId,
-          passwordHash: '',
-          isActive: true,
-          memberId: matchedMember.memberId
-        });
-        setLoginError('');
-        setActivePage('my_portal');
-        return;
-      }
+  // Ensure cloud data loaded before member validation
+  let members = db.getMembers();
+
+  if (!members || members.length === 0) {
+    await db.loadCloudData();
+    members = db.getMembers();
+  }
+
+  const matchedMember = members.find(m => m.memberId === username);
+
+  if (matchedMember) {
+    const last4Digits = matchedMember.mobile.replace(/\D/g, '').slice(-4);
+
+    if (password === last4Digits) {
+      setUser({
+        userId: matchedMember.memberId,
+        name: matchedMember.name,
+        role: UserRole.MEMBER,
+        username: matchedMember.memberId,
+        passwordHash: '',
+        isActive: true,
+        memberId: matchedMember.memberId
+      });
+
+      setLoginError('');
+      setActivePage('my_portal');
+      return;
     }
+  }
 
-    setLoginError('Invalid Credentials. Access denied.');
-  };
+  setLoginError('Invalid Credentials. Access denied.');
+};
 
   const handleLogout = () => {
     setUser(null);
