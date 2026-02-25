@@ -152,7 +152,6 @@ class DB {
   this.onSyncChange?.(true);
 
   try {
-    // STEP 1: ALWAYS FETCH CLOUD FIRST
     const rows = await supabaseRequest(
       'GET',
       `/bhadrakali_db?id=eq.${DB_ROW_ID}&select=data`
@@ -161,33 +160,40 @@ class DB {
     const cloudRow = rows && rows.length > 0 ? rows[0] : null;
     const cloudData = cloudRow?.data || null;
 
+    const localData = JSON.parse(this.getSerializedData());
+
+    // 🔥 CASE 1: LOCAL HAS CHANGES → PUSH
+    if (this.isDirty) {
+
+      const payload = {
+        id: DB_ROW_ID,
+        data: localData,
+        updated_at: new Date().toISOString(),
+      };
+
+      const updated = await supabaseRequest(
+        'PATCH',
+        `/bhadrakali_db?id=eq.${DB_ROW_ID}`,
+        payload
+      );
+
+      if (!updated || updated.length === 0) {
+        await supabaseRequest('POST', '/bhadrakali_db', payload);
+      }
+
+      this.isDirty = false;
+      this.onDirtyChange?.(false);
+      localStorage.setItem('mi_chit_last_sync', new Date().toISOString());
+
+      return true;
+    }
+
+    // 🔥 CASE 2: LOCAL CLEAN → PULL CLOUD
     if (cloudData) {
       this.deserialize(cloudData);
       this.saveLocal();
+      return true;
     }
-
-    // STEP 2: NOW PUSH CURRENT LOCAL (after merge)
-    const localData = JSON.parse(this.getSerializedData());
-
-    const payload = {
-      id: DB_ROW_ID,
-      data: localData,
-      updated_at: new Date().toISOString(),
-    };
-
-    const updated = await supabaseRequest(
-      'PATCH',
-      `/bhadrakali_db?id=eq.${DB_ROW_ID}`,
-      payload
-    );
-
-    if (!updated || updated.length === 0) {
-      await supabaseRequest('POST', '/bhadrakali_db', payload);
-    }
-
-    this.isDirty = false;
-    this.onDirtyChange?.(false);
-    localStorage.setItem('mi_chit_last_sync', new Date().toISOString());
 
     return true;
 
