@@ -152,10 +152,10 @@ class DB {
   this.onSyncChange?.(true);
 
   try {
-    // 1️⃣ Fetch current cloud data
+    // 1️⃣ Fetch cloud data
     const rows = await supabaseRequest(
       'GET',
-      `/bhadrakali_db?id=eq.${DB_ROW_ID}&select=data,updated_at`
+      `/bhadrakali_db?id=eq.${DB_ROW_ID}&select=data`
     );
 
     const cloudRow = rows && rows.length > 0 ? rows[0] : null;
@@ -163,10 +163,29 @@ class DB {
 
     const localData = JSON.parse(this.getSerializedData());
 
+    const localHasData =
+      (localData.members && localData.members.length > 0) ||
+      (localData.groups && localData.groups.length > 0);
+
+    const cloudHasData =
+      cloudData &&
+      ((cloudData.members && cloudData.members.length > 0) ||
+        (cloudData.groups && cloudData.groups.length > 0));
+
+    // 🚨 SAFETY RULE
+    // If cloud has data and local is empty → PULL cloud
+    if (cloudHasData && !localHasData) {
+      this.deserialize(cloudData);
+      this.saveLocal();
+      this.isDirty = false;
+      this.onDirtyChange?.(false);
+      return true;
+    }
+
     const cloudTime = new Date(cloudData?.lastUpdated || 0).getTime();
     const localTime = new Date(localData?.lastUpdated || 0).getTime();
 
-    // 2️⃣ If cloud is newer → pull cloud first
+    // If cloud newer → pull
     if (cloudData && cloudTime > localTime) {
       this.deserialize(cloudData);
       this.saveLocal();
@@ -175,7 +194,7 @@ class DB {
       return true;
     }
 
-    // 3️⃣ Otherwise push local to cloud
+    // Otherwise push local
     const payload = {
       id: DB_ROW_ID,
       data: localData,
@@ -195,6 +214,7 @@ class DB {
     this.isDirty = false;
     this.onDirtyChange?.(false);
     localStorage.setItem('mi_chit_last_sync', new Date().toISOString());
+
     return true;
 
   } catch (error) {
