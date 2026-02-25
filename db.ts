@@ -146,38 +146,65 @@ class DB {
 
   // ── Cloud Sync (Supabase) ─────────────────────────────────────────────────
   async syncWithCloud(): Promise<boolean> {
-    if (!navigator.onLine || !SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
+  if (!navigator.onLine || !SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
 
-    this.isSyncing = true;
-    this.onSyncChange?.(true);
+  this.isSyncing = true;
+  this.onSyncChange?.(true);
 
-    try {
-      const payload = {
-        id: DB_ROW_ID,
-        data: JSON.parse(this.getSerializedData()),
-        updated_at: new Date().toISOString(),
-      };
+  try {
+    // 1️⃣ Fetch current cloud data
+    const rows = await supabaseRequest(
+      'GET',
+      `/bhadrakali_db?id=eq.${DB_ROW_ID}&select=data,updated_at`
+    );
 
-      // Try update first; if 0 rows affected, insert
-      const updated = await supabaseRequest('PATCH', `/bhadrakali_db?id=eq.${DB_ROW_ID}`, payload);
-      if (!updated || updated.length === 0) {
-        // Row doesn't exist yet — insert it
-        await supabaseRequest('POST', '/bhadrakali_db', payload);
-      }
+    const cloudRow = rows && rows.length > 0 ? rows[0] : null;
+    const cloudData = cloudRow?.data || null;
 
+    const localData = JSON.parse(this.getSerializedData());
+
+    const cloudTime = new Date(cloudData?.lastUpdated || 0).getTime();
+    const localTime = new Date(localData?.lastUpdated || 0).getTime();
+
+    // 2️⃣ If cloud is newer → pull cloud first
+    if (cloudData && cloudTime > localTime) {
+      this.deserialize(cloudData);
+      this.saveLocal();
       this.isDirty = false;
       this.onDirtyChange?.(false);
-      localStorage.setItem('mi_chit_last_sync', new Date().toISOString());
       return true;
-
-    } catch (error) {
-      console.error('Cloud sync failed:', error);
-      return false;
-    } finally {
-      this.isSyncing = false;
-      this.onSyncChange?.(false);
     }
+
+    // 3️⃣ Otherwise push local to cloud
+    const payload = {
+      id: DB_ROW_ID,
+      data: localData,
+      updated_at: new Date().toISOString(),
+    };
+
+    const updated = await supabaseRequest(
+      'PATCH',
+      `/bhadrakali_db?id=eq.${DB_ROW_ID}`,
+      payload
+    );
+
+    if (!updated || updated.length === 0) {
+      await supabaseRequest('POST', '/bhadrakali_db', payload);
+    }
+
+    this.isDirty = false;
+    this.onDirtyChange?.(false);
+    localStorage.setItem('mi_chit_last_sync', new Date().toISOString());
+    return true;
+
+  } catch (error) {
+    console.error('Cloud sync failed:', error);
+    return false;
+  } finally {
+    this.isSyncing = false;
+    this.onSyncChange?.(false);
   }
+}
 
   async loadCloudData(): Promise<boolean> {
     if (!navigator.onLine || !SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
