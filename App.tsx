@@ -278,7 +278,13 @@ const App: React.FC = () => {
     return res;
   };
 
-  if (!user) {
+  if (!isAppReady) {
+  return <div style={{color:'white', textAlign:'center', marginTop:'100px'}}>
+    Loading...
+  </div>;
+}
+
+if (!user) {
     return (
       <div className="login-bg min-h-screen flex flex-col items-center justify-center p-4" style={{fontFamily: "'DM Sans', sans-serif"}}>
         {/* Decorative orbs */}
