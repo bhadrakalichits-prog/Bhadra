@@ -309,13 +309,6 @@ const App: React.FC = () => {
   return <div style={{color:'white', textAlign:'center', marginTop:'100px'}}>
     Loading...
   </div>;
-}
-
-if (!isAppReady) {
-  return (
-    <div style={{color:'white', textAlign:'center', marginTop:'120px'}}>
-      Loading data... Please wait
-    </div>
   );
 }
 
