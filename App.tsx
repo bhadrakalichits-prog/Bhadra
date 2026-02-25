@@ -286,6 +286,14 @@ const App: React.FC = () => {
   </div>;
 }
 
+if (!isAppReady) {
+  return (
+    <div style={{color:'white', textAlign:'center', marginTop:'120px'}}>
+      Loading data... Please wait
+    </div>
+  );
+}
+
 if (!user) {
     return (
       <div className="login-bg min-h-screen flex flex-col items-center justify-center p-4" style={{fontFamily: "'DM Sans', sans-serif"}}>
